@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8" />
   <title>Mangesh Cafe</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -91,6 +92,44 @@
     /* Style the Leaflet Popup for readability */
     .leaflet-popup-content-wrapper { background: #222; color: #fff; border: 1px solid #ff00ff; font-size: 0.8rem; }
     .leaflet-popup-tip { background: #ff00ff; }
+
+    /* Mobile Optimizations */
+@media (max-width: 600px) {
+  body {
+    padding: 0.75rem; /* Less whitespace on sides */
+  }
+
+  .grid {
+    grid-template-columns: 1fr; /* One giant tile per row instead of small columns */
+    gap: 1.5rem;
+    padding: 0 10px;
+  }
+
+  .tile {
+    width: 100%; /* Tiles stretch to fit the screen */
+    min-height: auto; 
+    padding: 20px;
+  }
+
+  .tile h2 {
+    font-size: 0.9rem; /* Slightly larger text for mobile readability */
+    min-height: 60px;
+  }
+
+  .map {
+    height: 220px; /* Bigger maps for easier viewing on touch screens */
+  }
+
+  .banner img {
+    border-radius: 0; /* Full width banner looks better on mobile */
+  }
+
+  .sort-control {
+    justify-content: center; /* Center the sort box so it's easy to reach */
+    padding-right: 0;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -118,6 +157,7 @@
 const hotels = [
   { name: "Santosh Cafe", area: "Powai", lat: 19.1244, lng: 72.9178 },
   { name: "Mumbai Travancore Kitchen", area: "Powai", lat: 19.12539, lng: 72.91934, popup: "Try pothichorru!" },
+  { name: "Tarri", area: "Kandivali", lat: 19.207166, lng: 72.874337, popup: "Expensive but tasty Konkani cuisine" },
   { name: "Raju Champaran Meat House", area: "Andheri", lat: 19.1140, lng: 72.8627 }
 ];
 
