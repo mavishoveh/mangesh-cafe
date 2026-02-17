@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mangesh Cafe</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 1.25rem;
+      padding-bottom: 2rem;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #000;
+      color: #e5e7eb;
+      background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 4px, 3px 100%;
+    }
+    .banner { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+    .banner img { max-width: 720px; width: 100%; border-radius: 8px; }
+    .image-strip-wrapper { overflow: hidden; margin-bottom: 2rem; }
+    .image-strip { display: flex; gap: 2rem; animation: scrollX 15s linear infinite; }
+    .image-strip img { height: 40px; image-rendering: pixelated; }
+    @keyframes scrollX { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+    .sort-control {
+      display: flex;
+      justify-content: flex-end; 
+      padding-right: 10%; 
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .sort-control::before { content: "SORT_BY >>"; font-family: 'Press Start 2P'; font-size: 0.7rem; color: #ff00ff; margin-right: 10px; }
+    .sort-control select {
+      font-family: 'Press Start 2P'; font-size: 0.7rem; background: #c0c0c0; color: #000;
+      border-top: 3px solid #fff; border-left: 3px solid #fff; border-right: 3px solid #808080; border-bottom: 3px solid #808080;
+      padding: 8px 30px 8px 10px; appearance: none; cursor: pointer;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><path d="M0 0 h10 L5 7 z" fill="black"/></svg>');
+      background-repeat: no-repeat; background-position: right 10px center;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, 280px); 
+      gap: 2rem;
+      justify-content: center; 
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto 3rem auto;
+    }
+    .tile {
+      position: relative;
+      background: #000;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-radius: 4px;
+      z-index: 1;
+      cursor: pointer;
+    }
+    .tile::before {
+      content: ""; position: absolute; z-index: -2; left: -50%; top: -50%; width: 200%; height: 200%;
+      background-image: conic-gradient(#ff0000, #ff00ff, #00ffff, #00ff00, #ffff00, #ff0000);
+      animation: rotateLED 4s linear infinite;
+    }
+    .tile::after {
+      content: ""; position: absolute; z-index: -1; left: 4px; top: 4px; right: 4px; bottom: 4px;
+      background: #000; border-radius: 2px;
+    }
+    @keyframes rotateLED { 100% { transform: rotate(1turn); } }
+    .tile h2 {
+      font-family: 'Press Start 2P'; font-size: 0.75rem; color: #fff;
+      margin: 0 0 1rem 0; line-height: 1.6; text-align: center;
+      min-height: 90px;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2;
+    }
+    .map { height: 160px; width: 100%; border: 1px solid #444; margin-top: auto; z-index: 2; }
+    .blinkies { 
+      display: flex; 
+      justify-content: center; 
+      gap: 15px; 
+      padding: 40px 0;
+      width: 100%;
+    }
+    .blinkies img { height: 31px; image-rendering: pixelated; }
+    
+    /* Style the Leaflet Popup for readability */
+    .leaflet-popup-content-wrapper { background: #222; color: #fff; border: 1px solid #ff00ff; font-size: 0.8rem; }
+    .leaflet-popup-tip { background: #ff00ff; }
+  </style>
+</head>
+<body>
+<div class="banner"><img src="banner.gif" alt="Mangesh Cafe" /></div>
+<div class="image-strip-wrapper">
+  <div class="image-strip">
+    <img src="mangesh.png"><img src="mangesh.png"><img src="mangesh.png"><img src="mangesh.png">
+    <img src="mangesh.png"><img src="mangesh.png"><img src="mangesh.png"><img src="mangesh.png">
+  </div>
+</div>
+<div class="sort-control">
+  <select id="sortSelect">
+    <option value="default">DEFAULT_LIST</option>
+    <option value="nearest">NEAREST_LOC</option>
+  </select>
+</div>
+<div id="hotelGrid" class="grid"></div>
+<div class="blinkies">
+  <img src="blinkie1.gif" alt=""> 
+  <img src="blinkie2.gif" alt=""> 
+  <img src="blinkie3.gif" alt="">
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const hotels = [
+  { name: "Santosh Cafe", area: "Powai", lat: 19.1244, lng: 72.9178 },
+  { name: "Mumbai Travancore Kitchen", area: "Powai", lat: 19.12539, lng: 72.91934, popup: "Try pothichorru!" },
+  { name: "Raju Champaran Meat House", area: "Andheri", lat: 19.1140, lng: 72.8627 }
+];
+
+function distance(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function renderTiles() {
+  const grid = document.getElementById('hotelGrid');
+  grid.innerHTML = "";
+  hotels.forEach((hotel, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.innerHTML = `<h2>${hotel.name}<br>[${hotel.area}]</h2><div id="map-${i}" class="map"></div>`;
+    grid.appendChild(tile);
+    
+    const mapDiv = document.getElementById(`map-${i}`);
+    const map = L.map(mapDiv, { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false }).setView([hotel.lat, hotel.lng], 15);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    
+    const googleUrl = `https://www.google.com/maps?q=${hotel.lat},${hotel.lng}`;
+    
+    // Prevent the tile click when clicking the map specifically
+    mapDiv.onclick = (e) => {
+      e.stopPropagation();
+    };
+
+    L.marker([hotel.lat, hotel.lng])
+      .addTo(map)
+      .bindPopup(`<b>${hotel.name}</b><br>${hotel.popup || hotel.area}<br><a href="${googleUrl}" target="_blank" style="color:#00ffff">Navigate</a>`);
+    
+    tile.onclick = () => {
+      window.open(googleUrl, '_blank');
+    };
+  });
+}
+
+const sortSelect = document.getElementById('sortSelect');
+let userLocation = null;
+sortSelect.addEventListener('change', () => {
+  if (sortSelect.value === "nearest" && !userLocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      hotels.sort((a,b) => distance(userLocation.lat, userLocation.lng, a.lat, a.lng) - distance(userLocation.lat, userLocation.lng, b.lat, b.lng));
+      renderTiles();
+    });
+  } else {
+    renderTiles();
+  }
+});
+renderTiles();
+</script>
+</body>
+</html>
