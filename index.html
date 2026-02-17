@@ -31,7 +31,7 @@
       align-items: center;
       margin-bottom: 2rem;
     }
-    .sort-control::before { content: "SORT_BY >>"; font-family: 'Press Start 2P'; font-size: 0.7rem; color: #ff00ff; margin-right: 10px; }
+    .sort-control::before { content: "SORT >>"; font-family: 'Press Start 2P'; font-size: 0.7rem; color: #ff00ff; margin-right: 10px; }
     .sort-control select {
       font-family: 'Press Start 2P'; font-size: 0.7rem; background: #c0c0c0; color: #000;
       border-top: 3px solid #fff; border-left: 3px solid #fff; border-right: 3px solid #808080; border-bottom: 3px solid #808080;
@@ -81,54 +81,86 @@
     }
     .map { height: 160px; width: 100%; border: 1px solid #444; margin-top: auto; z-index: 2; }
     .blinkies { 
-      display: flex; 
-      justify-content: center; 
-      gap: 15px; 
-      padding: 40px 0;
-      width: 100%;
-    }
-    .blinkies img { height: 31px; image-rendering: pixelated; }
+  display: flex; 
+  flex-wrap: wrap;      
+  justify-content: center; 
+  gap: 10px;           
+  padding: 20px 0;
+  width: 100%;
+  max-width: 1200px;     
+  margin: 0 auto;        
+  box-sizing: border-box;
+}
+
+.blinkies img { 
+  height: 35px; 
+  image-rendering: pixelated; 
+  max-width: 150px;   
+  object-fit: contain;
+}
     
     /* Style the Leaflet Popup for readability */
     .leaflet-popup-content-wrapper { background: #222; color: #fff; border: 1px solid #ff00ff; font-size: 0.8rem; }
     .leaflet-popup-tip { background: #ff00ff; }
 
-    /* Mobile Optimizations */
-@media (max-width: 600px) {
-  body {
-    padding: 0.75rem; /* Less whitespace on sides */
-  }
+    
 
-  .grid {
-    grid-template-columns: 1fr; /* One giant tile per row instead of small columns */
-    gap: 1.5rem;
-    padding: 0 10px;
-  }
+  @media (max-width: 600px) {
+    body {
+      padding: 0.5rem; /* Tighter padding to save space */
+    }
 
-  .tile {
-    width: 100%; /* Tiles stretch to fit the screen */
-    min-height: auto; 
-    padding: 20px;
-  }
+    .grid {
+     
+      grid-template-columns: 1fr 1fr; 
+      gap: 0.75rem; /* Closer tiles */
+      padding: 0 5px;
+    }
 
-  .tile h2 {
-    font-size: 0.9rem; /* Slightly larger text for mobile readability */
-    min-height: 60px;
-  }
+    .tile {
+      padding: 10px;
+    }
 
-  .map {
-    height: 220px; /* Bigger maps for easier viewing on touch screens */
-  }
+    .tile h2 {
+      
+      font-size: 0.55rem; 
+      min-height: 50px;
+      margin-bottom: 0.5rem;
+    }
 
-  .banner img {
-    border-radius: 0; /* Full width banner looks better on mobile */
-  }
+    .map {
+      height: 120px; 
+    }
 
-  .sort-control {
-    justify-content: center; /* Center the sort box so it's easy to reach */
-    padding-right: 0;
+    .sort-control {
+      justify-content: center;
+      padding-right: 0;
+      margin-bottom: 1rem;
+    }
+
+    .sort-control::before {
+      font-size: 0.5rem;
+    }
+
+    .sort-control select {
+      font-size: 0.5rem;
+      padding: 5px 20px 5px 5px;
+    }
+
+    .image-strip img {
+      height: 25px; 
+    }
+    .blinkies {
+    gap: 8px;            
+    padding: 15px 5px;
+  }
+  .blinkies img {
+    height: 25px;       
   }
 }
+   
+  
+
 
   </style>
 </head>
@@ -142,8 +174,8 @@
 </div>
 <div class="sort-control">
   <select id="sortSelect">
-    <option value="default">DEFAULT_LIST</option>
-    <option value="nearest">NEAREST_LOC</option>
+    <option value="default">Default</option>
+    <option value="nearest">Nearest</option>
   </select>
 </div>
 <div id="hotelGrid" class="grid"></div>
